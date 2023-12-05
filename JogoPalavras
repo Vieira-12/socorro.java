@@ -1,0 +1,82 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.*;
+
+public class JogoPalavras {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        String[] listaPalavras = obterListaPalavras("https://www.ime.usp.br/~pf/dicios/");
+        char letraSorteada = sortearLetra();
+
+        System.out.println("Bem-vindo ao jogo! Digite palavras que comecem com a letra: " + letraSorteada);
+        System.out.println("Digite 'fim' para encerrar o jogo.");
+
+        List<String> palavrasDoUsuario = new ArrayList<>();
+
+        while (true) {
+            System.out.print("Digite uma palavra: ");
+            String palavraDigitada = scanner.next();
+
+            if (palavraDigitada.equalsIgnoreCase("fim")) {
+                break;
+            }
+
+            String validacao = validarPalavra(palavraDigitada, letraSorteada, listaPalavras, palavrasDoUsuario);
+            if (validacao.equals("valida")) {
+                palavrasDoUsuario.add(palavraDigitada);
+            } else {
+                System.out.println("Palavra inválida. Motivo: " + validacao);
+            }
+        }
+
+        System.out.println("\nFim do jogo! Você digitou " + palavrasDoUsuario.size() + " palavras diferentes:");
+        for (String palavra : palavrasDoUsuario) {
+            System.out.println(palavra);
+        }
+
+        scanner.close();
+    }
+
+    private static String[] obterListaPalavras(String url) {
+        List<String> palavras = new ArrayList<>();
+        try {
+            URL urlObj = new URL(url);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(urlObj.openStream()))) {
+                String inputLine;
+                while ((inputLine = reader.readLine()) != null) {
+                    palavras.add(inputLine.trim());
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Erro ao obter a lista de palavras do URL.");
+            e.printStackTrace();
+        }
+
+        return palavras.toArray(new String[0]);
+    }
+
+    private static char sortearLetra() {
+        Random random = new Random();
+        // Gera uma letra aleatória (maiúscula ou minúscula)
+        return (char) (random.nextInt(26 * 2) + 'A');
+    }
+
+    private static String validarPalavra(String palavra, char letraSorteada, String[] listaPalavras, List<String> palavrasDoUsuario) {
+        if (palavra.length() < 4) {
+            return "A palavra deve ter pelo menos 4 letras.";
+        }
+        if (palavra.charAt(0) != letraSorteada) {
+            return "A palavra deve começar com a letra sorteada.";
+        }
+        if (palavrasDoUsuario.contains(palavra)) {
+            return "A palavra já foi digitada.";
+        }
+        if (!Arrays.asList(listaPalavras).contains(palavra)) {
+            return "A palavra não está na lista de palavras válidas.";
+        }
+        return "valida";
+    }
+}
